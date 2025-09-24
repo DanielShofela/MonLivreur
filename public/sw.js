@@ -1,9 +1,9 @@
-
 const CACHE_NAME = 'quickdeliver-v1';
 const urlsToCache = [
   '/',
-  '/index.html',
-  'https://cdn.tailwindcss.com'
+  '/index.html'
+  // Removed 'https://cdn.tailwindcss.com' to fix CORS error during service worker installation.
+  // The browser will handle caching this external resource via standard HTTP caching.
 ];
 
 self.addEventListener('install', event => {
