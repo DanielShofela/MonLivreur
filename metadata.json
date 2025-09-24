@@ -1,0 +1,5 @@
+{
+  "name": "QuickDeliver",
+  "description": "A Progressive Web App for a delivery service, allowing clients to place orders, track them in real-time, and view their history. Built with React, TypeScript, and Supabase.",
+  "requestFramePermissions": []
+}

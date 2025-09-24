@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#18181b" />
+    <title>QuickDeliver</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 1. Define CSS variables and base styles FIRST -->
+    <style type="text/tailwindcss">
+      @layer base {
+        :root {
+          /* New Light Theme inspired by the provided design system */
+          --background: 240 6% 96%; /* gray-100 */
+          --foreground: 240 10% 3.9%; /* gray-950 */
+          --card: 0 0% 100%; /* white */
+          --card-foreground: 240 10% 3.9%;
+          --popover: 0 0% 100%;
+          --popover-foreground: 240 10% 3.9%;
+          --primary: 25 95% 53%; /* orange-500 */
+          --primary-foreground: 0 0% 98%; /* gray-50 */
+          --secondary: 240 4.8% 95.9%; /* gray-100 */
+          --secondary-foreground: 240 5.9% 10%; /* gray-900 */
+          --muted: 240 4.8% 95.9%;
+          --muted-foreground: 240 3.8% 46.1%; /* gray-500 */
+          --accent: 240 4.8% 95.9%;
+          --accent-foreground: 240 5.9% 10%;
+          --destructive: 0 84.2% 60.2%; /* red-500 */
+          --destructive-foreground: 0 0% 98%;
+          --border: 240 5.9% 90%; /* gray-200 */
+          --input: 240 5.9% 90%;
+          --ring: 25 95% 53%;
+          --radius: 0.75rem; /* More rounded */
+        }
+
+        .dark {
+          /* New Dark Theme */
+          --background: 240 10% 3.9%; /* gray-950 */
+          --foreground: 0 0% 98%; /* gray-50 */
+          --card: 240 10% 3.9%;
+          --card-foreground: 0 0% 98%;
+          --popover: 240 10% 3.9%;
+          --popover-foreground: 0 0% 98%;
+          --primary: 25 95% 53%; /* orange-500 */
+          --primary-foreground: 240 5.9% 10%;
+          --secondary: 240 3.7% 15.9%; /* gray-800 */
+          --secondary-foreground: 0 0% 98%;
+          --muted: 240 3.7% 15.9%;
+          --muted-foreground: 240 5% 64.9%; /* gray-400 */
+          --accent: 240 3.7% 15.9%;
+          --accent-foreground: 0 0% 98%;
+          --destructive: 0 62.8% 30.6%; /* red-900 */
+          --destructive-foreground: 0 0% 98%;
+          --border: 240 3.7% 15.9%;
+          --input: 240 3.7% 15.9%;
+          --ring: 25 95% 53%;
+        }
+      }
+
+      @layer base {
+        * {
+          @apply border-border;
+        }
+        body {
+          @apply bg-background text-foreground;
+          font-family: 'Inter', sans-serif;
+        }
+      }
+    </style>
+    
+    <!-- 2. Configure Tailwind to USE the variables defined above -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(var(--border))',
+              input: 'hsl(var(--input))',
+              ring: 'hsl(var(--ring))',
+              background: 'hsl(var(--background))',
+              foreground: 'hsl(var(--foreground))',
+              primary: {
+                DEFAULT: 'hsl(var(--primary))',
+                foreground: 'hsl(var(--primary-foreground))',
+              },
+              secondary: {
+                DEFAULT: 'hsl(var(--secondary))',
+                foreground: 'hsl(var(--secondary-foreground))',
+              },
+              destructive: {
+                DEFAULT: 'hsl(var(--destructive))',
+                foreground: 'hsl(var(--destructive-foreground))',
+              },
+              muted: {
+                DEFAULT: 'hsl(var(--muted))',
+                foreground: 'hsl(var(--muted-foreground))',
+              },
+              accent: {
+                DEFAULT: 'hsl(var(--accent))',
+                foreground: 'hsl(var(--accent-foreground))',
+              },
+              popover: {
+                DEFAULT: 'hsl(var(--popover))',
+                foreground: 'hsl(var(--popover-foreground))',
+              },
+              card: {
+                DEFAULT: 'hsl(var(--card))',
+                foreground: 'hsl(var(--card-foreground))',
+              },
+            },
+            borderRadius: {
+              lg: "var(--radius)",
+              md: "calc(var(--radius) - 2px)",
+              sm: "calc(var(--radius) - 4px)",
+            },
+          }
+        }
+      }
+    </script>
+    
+    <!-- 3. Load the main Tailwind script AFTER configuration -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+     <script>
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.544.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.2",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.57.4",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.21"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
