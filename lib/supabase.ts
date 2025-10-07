@@ -6,8 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types';
 
 // ▼▼▼ I have configured the app with the credentials you provided. ▼▼▼
-const supabaseUrl = 'https://ztiowmnflwpeqjdpkjrv.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0aW93bW5mbHdwZXFqZHBranJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzkwOTMsImV4cCI6MjA3NDMxNTA5M30.kscSMbc1GB-qRDgguxvN92erXFzYqt9JV1HVqhwlpT0';
+const supabaseUrl = 'https://gwposrvlzhpgtbddwlbj.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3cG9zcnZsemhwZ3RiZGR3bGJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MzI0NjcsImV4cCI6MjA3NTQwODQ2N30.Dqu_MiR3rdVzV8jE-ndTxEKvbFE4AN_wNW-bh3nbP6M';
 // ▲▲▲ IMPORTANT: It is recommended to invalidate these keys and generate new ones. ▲▲▲
 
 // FIX: Removed the unnecessary configuration check. Since credentials are provided,

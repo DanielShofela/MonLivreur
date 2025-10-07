@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Order, NewOrder } from '../types';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Icon, cn } from '../components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
+import DeliveryMap from '../components/DeliveryMap';
 
 // #region --- Sub-Components ---
 
@@ -27,182 +28,15 @@ const Header: React.FC = () => {
     );
 };
 
-// New Order Form Component
-const OrderForm: React.FC<{ onOrderPlaced: () => void }> = ({ onOrderPlaced }) => {
-    const { user } = useAuth();
-    const [pickup, setPickup] = useState('');
-    const [destination, setDestination] = useState('');
-    const [price, setPrice] = useState<number | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-  
-    const calculatePrice = useCallback(() => {
-      if (pickup && destination) {
-        const randomPrice = Math.random() * (50 - 5) + 5;
-        setPrice(parseFloat(randomPrice.toFixed(2)));
-      } else {
-        setPrice(null);
-      }
-    }, [pickup, destination]);
-    
-    useEffect(() => {
-      const debounceTimer = setTimeout(() => calculatePrice(), 500);
-      return () => clearTimeout(debounceTimer);
-    }, [pickup, destination, calculatePrice]);
-  
-    const handleSubmit = async (e: FormEvent) => {
-      e.preventDefault();
-      if (!pickup || !destination || !price || !user) return;
-      setLoading(true);
-      setError(null);
-      
-      const newOrder: NewOrder = {
-        client_id: user.id,
-        pickup,
-        destination,
-        price,
-        status: 'pending'
-      };
-      
-      const { error } = await supabase.from('orders').insert(newOrder);
-  
-      if (error) {
-        setError(error.message);
-      } else {
-        setPickup('');
-        setDestination('');
-        onOrderPlaced();
-      }
-      setLoading(false);
-    };
-
-    return (
-        <Card className="shadow-xl">
-            <CardHeader>
-                <CardTitle>Create a New Delivery</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="relative">
-                        <Icon name="MapPin" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <Input placeholder="Enter pickup address" value={pickup} onChange={(e) => setPickup(e.target.value)} className="pl-10" required />
-                    </div>
-                    <div className="relative">
-                        <Icon name="Flag" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <Input placeholder="Enter delivery address" value={destination} onChange={(e) => setDestination(e.target.value)} className="pl-10" required />
-                    </div>
-                    
-                    <AnimatePresence>
-                    {price && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-center !my-6">
-                        <p className="text-muted-foreground">Estimated Price</p>
-                        <p className="text-3xl font-bold text-primary">${price}</p>
-                        </motion.div>
-                    )}
-                    </AnimatePresence>
-
-                    {error && <p className="text-sm text-destructive text-center">{error}</p>}
-                    <Button type="submit" disabled={loading || !price} className="w-full !mt-6" size="lg">
-                        <Icon name="ShoppingBag" className="w-5 h-5 mr-2" />
-                        {loading ? 'Placing Order...' : 'Place Order'}
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
-    );
-};
-
-// Order Tracker Component
-const OrderTracker: React.FC = () => {
-    const { user } = useAuth();
-    const [activeOrders, setActiveOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-
+// Order History Component
+const OrderHistory: React.FC<{ orders: Order[], onRefresh: () => void }> = ({ orders, onRefresh }) => {
     const statusLabels: Record<string, string> = {
         pending: 'Order Placed',
         accepted: 'Rider Assigned',
-        pickup: 'Picked Up',
-        enroute: 'In Transit',
-        delivered: 'Delivered'
+        in_progress: 'In Transit',
+        completed: 'Delivered',
+        cancelled: 'Cancelled'
     };
-
-    const fetchActiveOrders = useCallback(async () => {
-        if (!user) return;
-        setLoading(true);
-        const { data } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('client_id', user.id)
-            .in('status', ['pending', 'accepted', 'pickup', 'enroute'])
-            .order('created_at', { ascending: false });
-        setActiveOrders(data || []);
-        setLoading(false);
-    }, [user]);
-
-    useEffect(() => {
-        fetchActiveOrders();
-        const channel = supabase.channel('public:orders')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchActiveOrders)
-            .subscribe();
-        return () => { supabase.removeChannel(channel) };
-    }, [fetchActiveOrders]);
-
-    if (loading) return <div className="text-center py-8 text-muted-foreground">Loading active orders...</div>;
-
-    return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Active Orders</h2>
-            {activeOrders.length === 0 ? (
-                 <div className="text-center py-12 text-muted-foreground">
-                    <Icon name="Truck" className="w-12 h-12 mx-auto mb-4" />
-                    <p>No active orders</p>
-                </div>
-            ) : (
-                activeOrders.map(order => (
-                    <Card key={order.id} className="shadow-xl">
-                        <CardHeader>
-                            <div className="flex justify-between items-center">
-                                <CardTitle>Order #{order.id.slice(0, 8)}</CardTitle>
-                                <span className="px-3 py-1 rounded-full text-sm font-medium bg-primary/20 text-primary">{statusLabels[order.status] || order.status}</span>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center space-x-3"><Icon name="MapPin" className="w-5 h-5 text-muted-foreground" /><p>{order.pickup}</p></div>
-                            <div className="flex items-center space-x-3"><Icon name="Flag" className="w-5 h-5 text-muted-foreground" /><p>{order.destination}</p></div>
-                            <div className="pt-4 border-t flex justify-between items-center">
-                                <span className="text-lg font-semibold">Total</span>
-                                <span className="text-xl font-bold text-primary">${order.price.toFixed(2)}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))
-            )}
-        </div>
-    );
-};
-
-// History List Component
-const HistoryList: React.FC = () => {
-    const { user } = useAuth();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchHistory = async () => {
-            if (!user) return;
-            const { data } = await supabase
-                .from('orders')
-                .select('*')
-                .eq('client_id', user.id)
-                .in('status', ['delivered', 'cancelled'])
-                .order('created_at', { ascending: false });
-            if (data) setOrders(data);
-            setLoading(false);
-        };
-        fetchHistory();
-    }, [user]);
-
-    if (loading) return <div className="text-center py-8 text-muted-foreground">Loading history...</div>;
 
     return (
         <div className="space-y-6">
@@ -222,7 +56,7 @@ const HistoryList: React.FC = () => {
                             </div>
                             <div className="text-sm text-muted-foreground mb-2">{order.pickup} → {order.destination}</div>
                             <div className="flex items-center justify-between">
-                                <span className={cn('px-2 py-1 rounded-full text-xs font-medium', order.status === 'delivered' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500')}>{order.status}</span>
+                                <span className={cn('px-2 py-1 rounded-full text-xs font-medium', order.status === 'completed' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500')}>{order.status}</span>
                                 <span className="font-semibold">${order.price.toFixed(2)}</span>
                             </div>
                         </Card>
@@ -266,6 +100,7 @@ const ProfilePage: React.FC = () => {
 // Main Dashboard Component
 const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('order');
+  const [orders, setOrders] = useState<Order[]>([]);
   
   const menuItems = [
     { id: 'order', label: 'New Order', icon: 'Plus' },
@@ -274,11 +109,28 @@ const DashboardPage: React.FC = () => {
     { id: 'profile', label: 'Profile', icon: 'User' },
   ];
 
+  const fetchOrders = async () => {
+    const { data } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('client_id', user.id)
+      .order('created_at', { ascending: false });
+    setOrders(data || []);
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    const channel = supabase.channel('public:orders')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders)
+        .subscribe();
+    return () => { supabase.removeChannel(channel) };
+  }, [fetchOrders]);
+
   const renderContent = () => {
     switch (activeTab) {
-      case 'order': return <OrderForm onOrderPlaced={() => setActiveTab('tracking')} />;
+      case 'order': return <DeliveryMap />;
       case 'tracking': return <OrderTracker />;
-      case 'history': return <HistoryList />;
+      case 'history': return <OrderHistory orders={orders} onRefresh={fetchOrders} />;
       case 'profile': return <ProfilePage />;
       default: return null;
     }

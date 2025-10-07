@@ -9,14 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "@types/leaflet-routing-machine": "^3.2.9",
+    "axios": "^1.12.2",
+    "framer-motion": "^12.23.22",
+    "leaflet": "^1.9.4",
+    "leaflet-routing-machine": "^3.2.12",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.544.0",
-    "react-router-dom": "^7.9.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "@supabase/supabase-js": "^2.57.4",
-    "framer-motion": "^12.23.21"
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.9.2"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.20",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
