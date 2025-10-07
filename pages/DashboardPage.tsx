@@ -70,6 +70,15 @@ const OrderHistory: React.FC<{ orders: Order[], onRefresh: () => void }> = ({ or
 // Profile Page Component
 const ProfilePage: React.FC = () => {
     const { user, signOut } = useAuth();
+
+    if (!user) {
+        return (
+            <div className="text-center py-12 text-muted-foreground">
+                <p>Loading user profile...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold">Profile</h2>
@@ -80,8 +89,8 @@ const ProfilePage: React.FC = () => {
                             <Icon name="User" className="w-8 h-8 text-primary" />
                         </div>
                         <div>
-                            <h3 className="font-semibold">{user?.email?.split('@')[0]}</h3>
-                            <p className="text-muted-foreground">{user?.email}</p>
+                            <h3 className="font-semibold">{user.email?.split('@')[0]}</h3>
+                            <p className="text-muted-foreground">{user.email}</p>
                         </div>
                     </div>
                     <div className="pt-4 border-t">
@@ -99,6 +108,7 @@ const ProfilePage: React.FC = () => {
 
 // Main Dashboard Component
 const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('order');
   const [orders, setOrders] = useState<Order[]>([]);
   
@@ -109,27 +119,33 @@ const DashboardPage: React.FC = () => {
     { id: 'profile', label: 'Profile', icon: 'User' },
   ];
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (!user) return;
     const { data } = await supabase
-      .from('orders')
+      .from('commandes')
       .select('*')
       .eq('client_id', user.id)
       .order('created_at', { ascending: false });
     setOrders(data || []);
-  };
+  }, [user]);
 
   useEffect(() => {
-    fetchOrders();
-    const channel = supabase.channel('public:orders')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders)
-        .subscribe();
-    return () => { supabase.removeChannel(channel) };
-  }, [fetchOrders]);
+    if (user) {
+        fetchOrders();
+        const channel = supabase.channel('public:commandes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'commandes' }, (payload) => {
+                console.log('Change received!', payload)
+                fetchOrders();
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(channel) };
+    }
+  }, [user, fetchOrders]);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'order': return <DeliveryMap />;
-      case 'tracking': return <OrderTracker />;
+      // case 'tracking': return <OrderTracker />;
       case 'history': return <OrderHistory orders={orders} onRefresh={fetchOrders} />;
       case 'profile': return <ProfilePage />;
       default: return null;
